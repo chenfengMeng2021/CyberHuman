@@ -7,7 +7,7 @@ import openai
 
 
 
-OPENAI_API_KEY='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'
+OPENAI_API_KEY=""
 LLM = "gpt-3.5-turbo"
 
 
