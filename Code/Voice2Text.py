@@ -3,18 +3,13 @@
 # whisper model
 import whisper
 
-class Whisper:
-    def __init__(self, model_size = "base"):
-        self.model = whisper.load_model(model_size)
-    def textgenerator(self, radio):
-        """
-        this function servers for generating the text prompt from audio
-        :param radio: the location of the radio format, inlcude m4a, wav, mp4
-        :return:
-        """
-        Textprompt = self.model.transcribe(radio)
-        return Textprompt['text']
 
+class WhisperModel():
+    def __init__(self):
+        self.model = whisper.load_model("base")
+    def generate_text(self):
+        user_speech = self.model.transcribe("../temp/user.wav")["text"]
+        return user_speech
 
 
 
