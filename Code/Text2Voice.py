@@ -8,9 +8,8 @@ import torch
 from datasets import load_dataset
 import re
 
-from fairseq.checkpoint_utils import load_model_ensemble_and_task_from_hf_hub
-from fairseq.models.text_to_speech.hub_interface import TTSHubInterface
-import IPython.display as ipd
+
+
 
 # if the models using small models or not.
 SUNO_USE_SMALL_MODELS=True
@@ -76,27 +75,10 @@ class TTSOriginalModel(Text2Voice):
         speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
 
         speech = self.model.generate_speech(inputs["input_ids"], speaker_embeddings, vocoder=self.vocoder)
-        TTSOriginalModel.write_wav()
         return speech.numpy()
 
 
-class FastSpeech2(Text2Voice):
-    def __init__(self):
 
-        models, self.cfg, self.task = load_model_ensemble_and_task_from_hf_hub(
-            "facebook/fastspeech2-en-ljspeech",
-            arg_overrides={"vocoder": "hifigan", "fp16": False}
-        )
-        self.model = models[0]
-        TTSHubInterface.update_cfg_with_data_cfg(self.cfg, self.task.data_cfg)
-        self.generator = self.task.build_generator(self.model, self.cfg)
-
-    def audio_generator(self, text_prompt = "Hello, this is a test run."):
-
-        sample = TTSHubInterface.get_model_input(self.task, text_prompt)
-        wav, rate = TTSHubInterface.get_prediction(self.task, self.model, self.generator, sample)
-
-        ipd.Audio(wav, rate=rate)
 
 
 

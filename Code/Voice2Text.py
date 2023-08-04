@@ -16,5 +16,6 @@ class Whisper:
         return Textprompt['text']
 
 
-
-
+model = whisper.load_model("base")
+result = model.transcribe("./temp/speech.wav")
+print(result["text"])

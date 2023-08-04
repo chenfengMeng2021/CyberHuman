@@ -1,0 +1,8 @@
+
+TTS:
+	better voice
+		Fairseq: I can't install it into my computer
+
+STT:
+	whisper
+		can't find the file? : ffmpeg and ffmpeg-python, we should use ffmpeg-python, but turns out, we can't find the approaite path
