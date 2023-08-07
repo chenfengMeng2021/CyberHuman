@@ -4,12 +4,11 @@
 import whisper
 
 
-class WhisperModel():
+class WhisperModel:
     def __init__(self):
         self.model = whisper.load_model("base")
     def generate_text(self):
-        user_speech = self.model.transcribe("../temp/user.wav")["text"]
+        user_speech = self.model.transcribe("../temp/user_speech.wav")["text"]
         return user_speech
-
 
 

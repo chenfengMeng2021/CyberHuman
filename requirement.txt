@@ -22,11 +22,6 @@ jupyter nbextension enable --py widgetsnbextension
 
 For speech recognition
 
-for the install of brew
-    eval "$(homebrew/bin/brew shellenv)"
-    brew update --force --quiet
-    chmod -R go-w "$(brew --prefix)/share/zsh"
-
 
 
 

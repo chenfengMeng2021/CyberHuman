@@ -6,9 +6,9 @@ import json
 
 
 class ChatBot():
-    def __init__(self):
-        OPENAI_API_KEY = ""
-        openai.api_key = OPENAI_API_KEY
+    def __init__(self, openai_api_key):
+        openai.api_key = openai_api_key
+
         self.message = [
             {"role": "system", "content": "your name is alice, and you are a helpful assistant"}
         ]
@@ -23,5 +23,6 @@ class ChatBot():
         assistant_response = {"role": "assistant", "content": openai_response['choices'][0]['message']['content']}
         self.message.append(assistant_response)
         return assistant_response['content']
+
 
 
