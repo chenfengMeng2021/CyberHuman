@@ -3,8 +3,8 @@
 from Text2Voice import speak_out
 from Voice2Text import WhisperModel
 from LLMcore import ChatBot
-import openai
-
+from Text2Voice import df, speak_out
+from tkinter import ttk
 import tkinter as tk
 import threading
 from getVoice import AudioRecorder
@@ -12,50 +12,99 @@ from getVoice import AudioRecorder
 
 
 
-
 class ConversationBot():
-    def __init__(self, openai_api_key):
-        self.srm = WhisperModel()
-        self.chat = ChatBot(openai_api_key)
+    def __init__(self, openai_api_key, voice):
+        language = voice[0:2]
+        self.srm = WhisperModel(language)
+        self.chat = ChatBot(openai_api_key, language)
+        self.voice = voice
     def conversation(self):
         text = self.srm.generate_text()
         response = self.chat.response(text)
-        speak_out(response)
+        speak_out(response, self.voice)
         return text, response
 
 
-def get_openai_api():
+def initial():
     # Create a top-level window for the input dialog
-    openai_api_key = ""
+    openai_key = ""
+    voice      = ""
+
     input_win = tk.Tk()
-    input_win.title("Enter the OPENAI key")
+    input_win.title("Initial Setting")
 
-    lbl_prompt = tk.Label(input_win, text="Enter your Openai API key:")
-    lbl_prompt.pack(pady=10)
 
-    entry_input = tk.Entry(input_win)
-    entry_input.pack(pady=10)
+    def on_language_change(event):
+        language = language_var.get()
+        available_genders = df[df['Language'] == language]['Gender'].unique().tolist()
+        gender_dropdown['values'] = available_genders
+        gender_var.set('')
 
-    # This function will set the value and close the window
+    def on_gender_change(event):
+        language = language_var.get()
+        gender = gender_var.get()
+        available_names = df[(df['Language'] == language) & (df['Gender'] == gender)]['Name'].tolist()
+        name_dropdown['values'] = available_names
+        name_var.set('')
+
+    def on_voice_chosen(event):
+        language = language_var.get()
+        if language == "zh":
+            response = "你好，很高兴为你服务"
+        elif language == "en":
+            response = "Hi, as your service"
+        speak_out(response, name_var.get())
+
     def submit():
-        nonlocal openai_api_key
-        openai_api_key = entry_input.get()
+        nonlocal openai_key
+        nonlocal voice
+        openai_key = key_input.get()
+        voice = name_var.get()
         input_win.destroy()
 
-    btn_submit = tk.Button(input_win, text="Submit", command=submit)
-    btn_submit.pack(pady=10)
+    lbl_prompt = tk.Label(input_win, text="Enter your Openai API key:")
+    lbl_prompt.grid(row=0, column=0, padx=10, pady=10)
+
+    key_input = tk.Entry(input_win)
+    key_input.grid(row=0, column=1, padx=10, pady=10)
+
+    language_prompt = tk.Label(input_win, text="Language")
+    language_prompt.grid(row=1, column=0, padx=10, pady=10)
+
+    language_var = tk.StringVar()
+    language_dropdown = ttk.Combobox(input_win, textvariable=language_var, values=df['Language'].unique().tolist())
+    language_dropdown.bind('<<ComboboxSelected>>', on_language_change)
+    language_dropdown.grid(row=1, column=1, padx=10, pady=10)
+
+    gender_prompt = tk.Label(input_win, text="Gender")
+    gender_prompt.grid(row=2, column=0, padx=10, pady=10)
+
+    gender_var = tk.StringVar()
+    gender_dropdown = ttk.Combobox(input_win, textvariable=gender_var)
+    gender_dropdown.bind('<<ComboboxSelected>>', on_gender_change)
+    gender_dropdown.grid(row=2, column=1, padx=10, pady=10)
+
+    voice_prompt = tk.Label(input_win, text="Voice")
+    voice_prompt.grid(row=3, column=0, padx=10, pady=10)
+
+    name_var = tk.StringVar()
+    name_dropdown = ttk.Combobox(input_win, textvariable=name_var)
+    name_dropdown.bind('<<ComboboxSelected>>', on_voice_chosen)
+    name_dropdown.grid(row=3, column=1, padx=10, pady=10)
+
+    submit_button = ttk.Button(input_win, text="Submit", command=submit)
+    submit_button.grid(row=4, column=0, padx=10, pady=10, columnspan=3)
 
     input_win.mainloop()
 
-    return openai_api_key
+    return voice, openai_key
 
 
 
 def main():
-    api_key = get_openai_api()
-
+    voice, api_key = initial()
     recorder = AudioRecorder()
-    chatmodel = ConversationBot(api_key)
+    chatmodel = ConversationBot(api_key, voice)
 
     def on_keypress(event):
         if not recorder.is_recording:
