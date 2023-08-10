@@ -4,7 +4,7 @@
 This Project is dedicated to the simulated conversation in real life with chatbot. it means we can directly talk with chatbot by voice, and "see" chatbot.
 
 ## Workflow
-
+![](workflow.png)
 
 ## Current Features
 1. People can talk with Chatbot by voice --update 8/9/2023
