@@ -2,11 +2,8 @@
 
 
 import subprocess
-import pyaudio
-import wave
-import time
 import pandas as pd
-
+import pygame
 
 # Executing the provided DataFrame construction code
 
@@ -24,48 +21,56 @@ df = pd.DataFrame(data)
 class and function
 """
 
+import pygame
+
 class AudioPlayer:
     def __init__(self):
-        self.p = pyaudio.PyAudio()
+        pygame.mixer.init()
 
-    def play(self, filename):
-        wf = wave.open(filename, 'rb')
+    def play_sound(self, sound_path):
+        """Play the sound at the specified path."""
+        try:
+            pygame.mixer.music.load(sound_path)
+            pygame.mixer.music.play()
+        except pygame.error as e:
+            print(f"Error playing sound: {e}")
 
-        def callback(in_data, frame_count, time_info, status):
-            data = wf.readframes(frame_count)
-            return (data, pyaudio.paContinue)
+    def stop_sound(self):
+        """Stop the currently playing sound."""
+        pygame.mixer.music.stop()
 
-        stream = self.p.open(format=self.p.get_format_from_width(wf.getsampwidth()),
-                             channels=wf.getnchannels(),
-                             rate=wf.getframerate(),
-                             output=True,
-                             stream_callback=callback)
+    def pause_sound(self):
+        """Pause the currently playing sound."""
+        pygame.mixer.music.pause()
 
-        stream.start_stream()
+    def unpause_sound(self):
+        """Unpause the currently playing sound."""
+        pygame.mixer.music.unpause()
 
-        while stream.is_active():
-            time.sleep(0.1)
+    def is_playing(self):
+        """Check if a sound is currently playing."""
+        return pygame.mixer.music.get_busy()
 
-        stream.stop_stream()
-        stream.close()
-        wf.close()
+    def wait_for_completion(self):
+        """Block until the currently playing sound completes."""
+        while self.is_playing():
+            pygame.time.Clock().tick(10)
 
-    def close(self):
-        self.p.terminate()
+    def cleanup(self):
+        """Clean up resources."""
+        pygame.mixer.quit()
+
 
 
 def speak_out(assistant_response, name):
 
     assistant_response = assistant_response.replace("\n", " ")
-    media_create = f"edge-tts --voice {name} --text \"{assistant_response}\" --write-media ../temp/assistant_speech.mp3  --write-subtitles ../temp/assistant_speech.vtt"
+    media_create = f"edge-tts --voice {name} --text \"{assistant_response}\" --write-media ../temp/assistant_speech.mp3 "
     subprocess.run(media_create, shell=True)
-    format_change = f"ffmpeg -i ../temp/assistant_speech.mp3 -y ../temp/assistant_speech.wav "
-    subprocess.run(format_change, shell=True)
     player = AudioPlayer()
-    player.play('../temp/assistant_speech.wav')
-    player.close()
-
-
+    player.play_sound('../temp/assistant_speech.mp3')
+    player.wait_for_completion()
+    player.cleanup()
 
 
 

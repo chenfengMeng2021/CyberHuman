@@ -1,6 +1,7 @@
 # This is the main script
 
-from Text2Voice import speak_out
+
+
 from Voice2Text import WhisperModel
 from LLMcore import ChatBot
 from Text2Voice import df, speak_out
@@ -8,6 +9,20 @@ from tkinter import ttk
 import tkinter as tk
 import threading
 from getVoice import AudioRecorder
+from PIL import Image, ImageTk
+from Text2Image import ImageGenerator
+
+positive_prompt = "1 girl, solo, smiling, light blue eyes, sugar pink hair, white beanie, pink cloth, white mini skirt, knee length socks, hearts, cute, sparkly, holding cat, chibi, (pastel pink), glitter"
+negative_prompt = "NG_DeepNegative_V1_75T, EasyNegativeV2,  extra fingers, fewer fingers, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (worst quality, low quality:1.4), Negative2, (low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad composition, inaccurate eyes, extra digit,fewer digits, (extra arms:1.2), (bad-artist:0.6), bad-image-v2-39000,"
+loras = []
+style = "animation"
+
+
+ckptmodeldict = {"realistic":"chilloutmix_NiCkpt.safetensors",
+                 "animation1":"ghostmix_v20Bakedvae.safetensors",
+                 "animation2":"AnythingV5Ink_ink.safetensors",
+                 "cute_animation":"cuteyukimixAdorable_neochapter3.safetensors",
+                 "2.5D":"dreamshaper_8.safetensors"}
 
 
 
@@ -17,11 +32,9 @@ class ConversationBot():
         language = voice[0:2]
         self.srm = WhisperModel(language)
         self.chat = ChatBot(openai_api_key, language)
-        self.voice = voice
     def conversation(self):
         text = self.srm.generate_text()
         response = self.chat.response(text)
-        speak_out(response, self.voice)
         return text, response
 
 
@@ -50,9 +63,9 @@ def initial():
     def on_voice_chosen(event):
         language = language_var.get()
         if language == "zh":
-            response = "你好，很高兴为你服务"
+            response = "你好，很高兴认识你"
         elif language == "en":
-            response = "Hi, as your service"
+            response = "Hi, Nice to meet you"
         speak_out(response, name_var.get())
 
     def submit():
@@ -105,62 +118,96 @@ def main():
     voice, api_key = initial()
     recorder = AudioRecorder()
     chatmodel = ConversationBot(api_key, voice)
+    model = ImageGenerator(ckptmodeldict["cute_animation"])
+
+
+    def toggle_fullscreen(event=None):
+        """Function to toggle between fullscreen and windowed mode."""
+        root.attributes("-fullscreen", not root.attributes("-fullscreen"))
+        return "break"  # To prevent the propagation of the event
+
+    def end_fullscreen(event=None):
+        """Function to end fullscreen mode."""
+        root.attributes("-fullscreen", False)
+        return "break"  # To prevent the propagation of the event
 
     def on_keypress(event):
         if not recorder.is_recording:
             threading.Thread(target=recorder.start_recording).start()
             lbl.config(text="Recording...")
 
+    def load_and_resize_image(image_path, width, height):
+        """Load and resize an image to the specified dimensions."""
+        img = Image.open(image_path)
+        img_resized = img.resize((width, height), Image.ANTIALIAS)
+        return ImageTk.PhotoImage(img_resized)
+
+
     def on_keyrelease(event):
         if recorder.is_recording:  # To ensure this function doesn't run after stopping recording and before starting a new one
             recorder.stop_recording()
-            lbl.config(text="Recording Stopped. Saving...")
             recorder.save_audio()
-            lbl.config(text="Audio saved as output.wav. Press space to record again.")
+            lbl.config(text="waiting for response")
+
             # call the chatbot
             user_speech, assistant_response = chatmodel.conversation()
+            lbl.config(text="drawing")
+
+            #generate picture
+            image = model.generate(style, positive_prompt, negative_prompt, loras)
+
+            # Reload and resize the background image
+            #bg_image = load_and_resize_image("../temp/output.png", 1920, 1080)
+            img_resized = image.resize((1920, 1080), Image.ANTIALIAS)
+            bg_image = ImageTk.PhotoImage(img_resized)
+
+            bg_label.configure(image=bg_image)
+            bg_label.image = bg_image
 
             #Temporarily change the Text widget to normal state.
             txt_history.config(state=tk.NORMAL)
-
             # insert and returned strings into the Text widget
             txt_history.insert(tk.END, "User:" + user_speech + "\n")
             txt_history.insert(tk.END, "Assistant:" + assistant_response + "\n")
             txt_history.see(tk.END)
-
             # Set the Text widget back to DISABLED state to make it read-only
             txt_history.config(state=tk.DISABLED)
+            #set the lbl again
+            lbl.config(text = "Press the spacebar to start recording. ")
+
+            # speak out assistant response
+            threading.Thread(target=speak_out, args=(assistant_response, voice)).start()
+
 
     root = tk.Tk()
     root.title("CyberHuman Project")
+    root.attributes("-fullscreen", True)
 
-    # Set window size
-    width = 600  # window width
-    height = 400  # window height
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
 
-    # Calculate position
-    x = (screen_width/2) - (width/2)
-    y = (screen_height/2) - (height/2)
-    root.geometry('%dx%d+%d+%d' % (width, height, x, y))
+    # Initially load and resize the background image
+    bg_image = load_and_resize_image("../temp/output.png", 1920, 1080)
+    bg_label = tk.Label(root, image=bg_image)
+    bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
     #pack the history of talk
     txt_history = tk.Text(root, height = 10, width = 50)
     txt_history.config(state=tk.DISABLED)
-    txt_history.pack(pady=10)
+    txt_history.place(relx=0.5, rely=0.9, anchor='center')
+
 
     lbl = tk.Label(root, text="Press the spacebar to start recording.")
-    lbl.pack(pady=10)
-
+    lbl.place(relx=0.5, rely=0.95, anchor='center')
 
 
     root.bind("<KeyPress-space>", on_keypress)
     root.bind("<KeyRelease-space>", on_keyrelease)
 
+    # Bind the F11 key to toggle fullscreen mode
+    root.bind("<F11>", toggle_fullscreen)
+    # Bind the Escape key to end fullscreen mode
+    root.bind("<Escape>", end_fullscreen)
 
     root.mainloop()
-
     recorder.close()
 
 
