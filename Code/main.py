@@ -29,10 +29,10 @@ ckptmodeldict = {"realistic":"chilloutmix_NiCkpt.safetensors",
 
 
 class ConversationBot():
-    def __init__(self, openai_api_key, voice):
+    def __init__(self, openai_api_key, voice, character_path, translator_path):
         language = voice[0:2]
         self.srm = WhisperModel(language)
-        self.chat = ChatBot(openai_api_key, language, "../prompt/utilities/translator.txt", "../prompt/characters/alice.txt")
+        self.chat = ChatBot(openai_api_key, language, translator_path, character_path)
     def conversation(self):
         text = self.srm.generate_text()
         response = self.chat.response(text)
@@ -152,7 +152,9 @@ def initial():
 def main():
     voice, api_key, character_path, style = initial()
     recorder = AudioRecorder()
-    chatmodel = ConversationBot(api_key, voice)
+    translator_path = "../prompt/utilities/translator.txt"
+    chatmodel = ConversationBot(api_key, voice, character_path, translator_path)
+    
     model = ImageGenerator(ckptmodeldict["cute_animation"])
 
 
@@ -231,7 +233,6 @@ def main():
     txt_history = tk.Text(root, height = 10, width = 50)
     txt_history.config(state=tk.DISABLED)
     txt_history.place(relx=0.5, rely=0.9, anchor='center')
-
 
     lbl = tk.Label(root, text="Press the spacebar to start recording.")
     lbl.place(relx=0.5, rely=0.95, anchor='center')
