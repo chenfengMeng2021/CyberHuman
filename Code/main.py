@@ -1,10 +1,8 @@
 # This is the main script
 
-
-
 from Voice2Text import WhisperModel
 from LLMcore import ChatBot
-from Text2Voice import df, speak_out
+from Text2Voice import DF, speak_out
 from tkinter import ttk
 import tkinter as tk
 import threading
@@ -54,14 +52,14 @@ def initial():
 
     def on_language_change(event):
         language = language_var.get()
-        available_genders = df[df['Language'] == language]['Gender'].unique().tolist()
+        available_genders = DF[DF['Language'] == language]['Gender'].unique().tolist()
         gender_dropdown['values'] = available_genders
         gender_var.set('')
 
     def on_gender_change(event):
         language = language_var.get()
         gender = gender_var.get()
-        available_names = df[(df['Language'] == language) & (df['Gender'] == gender)]['Name'].tolist()
+        available_names = DF[(DF['Language'] == language) & (DF['Gender'] == gender)]['Name'].tolist()
         name_dropdown['values'] = available_names
         name_var.set('')
 
@@ -95,7 +93,7 @@ def initial():
     language_label.grid(row=1, column=1, padx=10, pady=10)
 
     language_var = tk.StringVar()
-    language_dropdown = ttk.Combobox(input_win, textvariable=language_var, values=df['Language'].unique().tolist())
+    language_dropdown = ttk.Combobox(input_win, textvariable=language_var, values=DF['Language'].unique().tolist())
     language_dropdown.bind('<<ComboboxSelected>>', on_language_change)
     language_dropdown.grid(row=1, column=2, padx=10, pady=10)
 
@@ -144,7 +142,6 @@ def initial():
 
     input_win.mainloop()
     character_path = f'../prompt/characters/{character_var.get()}'
-    print(style_var.get())
     return voice, openai_key, character_path, style_var.get()
 
 
@@ -154,7 +151,7 @@ def main():
     recorder = AudioRecorder()
     translator_path = "../prompt/utilities/translator.txt"
     chatmodel = ConversationBot(api_key, voice, character_path, translator_path)
-    
+
     model = ImageGenerator(ckptmodeldict["cute_animation"])
 
 
