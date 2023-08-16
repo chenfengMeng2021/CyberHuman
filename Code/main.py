@@ -31,7 +31,7 @@ class ConversationBot():
     def __init__(self, openai_api_key, voice):
         language = voice[0:2]
         self.srm = WhisperModel(language)
-        self.chat = ChatBot(openai_api_key, language)
+        self.chat = ChatBot(openai_api_key, language, "../prompt/utilities/translator.txt", "../prompt/characters/alice.txt")
     def conversation(self):
         text = self.srm.generate_text()
         response = self.chat.response(text)
@@ -153,12 +153,13 @@ def main():
             user_speech, assistant_response = chatmodel.conversation()
             lbl.config(text="drawing")
 
+
             #generate picture
-            image = model.generate(style, positive_prompt, negative_prompt, loras)
+            image = model.generate(style, positive_prompt, negative_prompt, loras, width//2, height//2)
 
             # Reload and resize the background image
             #bg_image = load_and_resize_image("../temp/output.png", 1920, 1080)
-            img_resized = image.resize((1920, 1080), Image.ANTIALIAS)
+            img_resized = image.resize((width, height), Image.ANTIALIAS)
             bg_image = ImageTk.PhotoImage(img_resized)
 
             bg_label.configure(image=bg_image)
@@ -172,20 +173,25 @@ def main():
             txt_history.see(tk.END)
             # Set the Text widget back to DISABLED state to make it read-only
             txt_history.config(state=tk.DISABLED)
-            #set the lbl again
-            lbl.config(text = "Press the spacebar to start recording. ")
 
             # speak out assistant response
             threading.Thread(target=speak_out, args=(assistant_response, voice)).start()
+
+            #set the lbl again
+            lbl.config(text = "Press the spacebar to start recording. ")
+
+
 
 
     root = tk.Tk()
     root.title("CyberHuman Project")
     root.attributes("-fullscreen", True)
+    width = root.winfo_screenwidth()
+    height = root.winfo_screenheight()
 
 
     # Initially load and resize the background image
-    bg_image = load_and_resize_image("../temp/output.png", 1920, 1080)
+    bg_image = load_and_resize_image("../temp/output.png", width, height)
     bg_label = tk.Label(root, image=bg_image)
     bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 

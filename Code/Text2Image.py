@@ -16,7 +16,7 @@ class ImageGenerator:
         }
         requests.post(url=f'{url}/sdapi/v1/options', json=option_payload)
 
-    def generate(self, style, prompt, negative_prompt, loras):
+    def generate(self, style, prompt, negative_prompt, loras, image_width, image_height):
         for i in range(len(loras)):
             loras[i] = f" <lora:{loras[i]}>"
         loras = ", ".join(loras)
@@ -27,8 +27,8 @@ class ImageGenerator:
             "styles": [
                 style
             ],
-            "width": 910,
-            "height": 540,
+            "width": image_width,
+            "height": image_height,
             "steps": 30,
             "cfg_scale": 6,
             "negative_prompt": negative_prompt,
