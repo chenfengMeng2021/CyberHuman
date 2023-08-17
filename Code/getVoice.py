@@ -15,7 +15,11 @@ class AudioRecorder:
 
     def start_recording(self):
         self.is_recording = True
-        self.stream = self.p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, frames_per_buffer=CHUNK)
+        self.stream = self.p.open(format=FORMAT,
+                                  channels=CHANNELS,
+                                  rate=RATE,
+                                  input=True,
+                                  frames_per_buffer=CHUNK)
         self.frames = []
 
         while self.is_recording:

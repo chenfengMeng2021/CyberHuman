@@ -33,7 +33,9 @@ class _Translator():
             messages=self.message,
             temperature=0
         )
-        assistant_response = {"role": "assistant", "content": openai_response['choices'][0]['message']['content']}
+        assistant_response = {"role": "assistant",
+                              "content":
+                                  openai_response['choices'][0]['message']['content']}
         self.message.append(assistant_response)
         return assistant_response['content']
 
@@ -62,11 +64,9 @@ class ChatBot():
             messages=self.message
         )
 
-        assistant_response = {"role": "assistant", "content": openai_response['choices'][0]['message']['content']}
+        assistant_response = {"role": "assistant",
+                              "content":
+                                  openai_response['choices'][0]['message']['content']}
         self.message.append(assistant_response)
 
         return assistant_response['content']
-
-
-
-

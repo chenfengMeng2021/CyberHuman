@@ -3,7 +3,7 @@
 
 import subprocess
 import pandas as pd
-
+import pygame
 
 # Executing the provided DataFrame construction code
 
@@ -20,8 +20,6 @@ DF = pd.DataFrame(DATA)
 -----------------------------------------------------------------------------------------------------
 class and function
 """
-
-import pygame
 
 class AudioPlayer:
     def __init__(self):
@@ -65,7 +63,9 @@ class AudioPlayer:
 def speak_out(assistant_response, name):
 
     assistant_response = assistant_response.replace("\n", " ")
-    media_create = f"edge-tts --voice {name} --text \"{assistant_response}\" --write-media ../temp/assistant_speech.mp3 "
+    media_create = f"edge-tts --voice {name} " \
+                   f"--text \"{assistant_response}\" " \
+                   f"--write-media ../temp/assistant_speech.mp3 "
     subprocess.run(media_create, shell=True)
     player = AudioPlayer()
     player.play_sound('../temp/assistant_speech.mp3')

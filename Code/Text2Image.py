@@ -1,9 +1,7 @@
-import json
 import requests
 import io
 import base64
-from PIL import Image, PngImagePlugin
-
+from PIL import Image
 
 
 
@@ -16,9 +14,13 @@ class ImageGenerator:
         }
         requests.post(url=f'{url}/sdapi/v1/options', json=option_payload)
 
-    def generate(self, style, prompt, loras, image_width, image_height):
+
+    def generate(self, style, prompt,
+                 loras, image_width, image_height):
+
         for i in range(len(loras)):
             loras[i] = f" <lora:{loras[i]}>"
+
         loras = ", ".join(loras)
         prompt = prompt + loras
         print(prompt)
