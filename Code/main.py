@@ -178,7 +178,11 @@ def main():
     def load_and_resize_image(image_path, width, height):
         """Load and resize an image to the specified dimensions."""
         img = Image.open(image_path)
-        img_resized = img.resize((width, height), Image.ANTIALIAS)
+        try:
+            ANTIALIAS = Image.Resampling.LANCZOS
+        except AttributeError:
+            ANTIALIAS = Image.ANTIALIAS
+        img_resized = img.resize((width, height), ANTIALIAS)
         return ImageTk.PhotoImage(img_resized)
 
 
