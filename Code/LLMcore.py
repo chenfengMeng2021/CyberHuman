@@ -68,5 +68,5 @@ class ChatBot():
         return assistant_response['content']
 
 
-model = ChatBot("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", "en", "../prompt/utilities/translator.txt", "../prompt/characters/alice.txt")
+
 
