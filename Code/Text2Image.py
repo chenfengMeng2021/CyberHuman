@@ -3,7 +3,11 @@ import io
 import base64
 from PIL import Image
 
-
+CKPTMODELDICT = {"realistic":"chilloutmix_NiCkpt.safetensors",
+                 "animation1":"ghostmix_v20Bakedvae.safetensors",
+                 "animation2":"AnythingV5Ink_ink.safetensors",
+                 "cute_animation":"cuteyukimixAdorable_neochapter3.safetensors",
+                 "2.5D":"dreamshaper_8.safetensors"}
 
 class ImageGenerator:
     def __init__(self, ckptmodel):

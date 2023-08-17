@@ -1,33 +1,25 @@
 # This is the main script
 
-
-
-from Voice2Text import WhisperModel
-from LLMcore import ChatBot
-from Text2Voice import DF, speak_out
 from tkinter import ttk
 import tkinter as tk
 import threading
 from getVoice import AudioRecorder
-from PIL import Image, ImageTk
+from Text2Voice import DF, speak_out
+from LLMcore import ChatBot
 from Text2Image import ImageGenerator
+from Text2Image import CKPTMODELDICT as ckptmodeldict
+from Voice2Text import WhisperModel
+from PIL import Image, ImageTk
 import os
 
 
-positive_prompt = "1 girl, solo, smiling, light blue eyes, sugar pink hair, white beanie, pink cloth, white mini skirt, knee length socks, hearts, cute, sparkly, holding cat, chibi, (pastel pink), glitter"
-negative_prompt = "NG_DeepNegative_V1_75T, EasyNegativeV2,  extra fingers, fewer fingers, lowres, bad anatomy, bad hands, text, error, missing fingers, extra digit, fewer digits, cropped, worst quality, low quality, normal quality, jpeg artifacts, signature, watermark, username, blurry, (worst quality, low quality:1.4), Negative2, (low quality, worst quality:1.4), (bad anatomy), (inaccurate limb:1.2), bad composition, inaccurate eyes, extra digit,fewer digits, (extra arms:1.2), (bad-artist:0.6), bad-image-v2-39000,"
-loras = []
-style = "animation"
 
 
-ckptmodeldict = {"realistic":"chilloutmix_NiCkpt.safetensors",
-                 "animation1":"ghostmix_v20Bakedvae.safetensors",
-                 "animation2":"AnythingV5Ink_ink.safetensors",
-                 "cute_animation":"cuteyukimixAdorable_neochapter3.safetensors",
-                 "2.5D":"dreamshaper_8.safetensors"}
+
 
 def prompt_divide(assistant_response):
-    asstance_talk, environment_description = assistant_response.replace("\n", " ").split("Part 1:")[1].split("Part 2:")
+    asstance_talk, environment_description \
+        = assistant_response.replace("\n", " ").split("Part 1:")[1].split("Part 2:")
     return asstance_talk, environment_description
 
 
@@ -62,7 +54,8 @@ def initial():
     def on_gender_change(event):
         language = language_var.get()
         gender = gender_var.get()
-        available_names = DF[(DF['Language'] == language) & (DF['Gender'] == gender)]['Name'].tolist()
+        available_names = DF[(DF['Language'] == language) &
+                             (DF['Gender'] == gender)]['Name'].tolist()
         name_dropdown['values'] = available_names
         name_var.set('')
 
@@ -96,7 +89,8 @@ def initial():
     language_label.grid(row=1, column=1, padx=10, pady=10)
 
     language_var = tk.StringVar()
-    language_dropdown = ttk.Combobox(input_win, textvariable=language_var, values=DF['Language'].unique().tolist())
+    language_dropdown = ttk.Combobox(input_win, textvariable=language_var,
+                                     values=DF['Language'].unique().tolist())
     language_dropdown.bind('<<ComboboxSelected>>', on_language_change)
     language_dropdown.grid(row=1, column=2, padx=10, pady=10)
 
@@ -140,19 +134,27 @@ def initial():
     style_dropdown['values'] = ["animation", "realistic", "photographic", "2.5D"]
     style_dropdown.grid(row=5, column=2, padx=10, pady=10)
 
+    lora_label = tk.Label(input_win, text="appearance selection: ")
+    lora_label.grid(row=6, column=1, padx=10, pady=10)
+
+    lora_var = tk.StringVar()
+    lora_dropdown = ttk.Combobox(input_win, textvariable=lora_var)
+    lora_dropdown['values'] = ['']
+    lora_dropdown.grid(row=6, column=2, padx=10, pady=10)
+
     submit_button = ttk.Button(input_win, text="Submit", command=submit)
     submit_button.grid(row=10, column=1, padx=10, pady=10, columnspan=3)
 
     input_win.mainloop()
     character_path = f'../prompt/characters/{character_var.get()}'
-    return voice, openai_key, character_path, style_var.get()
+    return voice, openai_key, character_path, style_var.get(), lora_var.get()
 
 
 
 
 
 def main():
-    voice, api_key, character_path, style = initial()
+    voice, api_key, character_path, style, loras = initial()
     recorder = AudioRecorder()
     translator_path = "../prompt/utilities/translator.txt"
     chatmodel = ConversationBot(api_key, voice, character_path, translator_path)
@@ -187,7 +189,7 @@ def main():
 
 
     def on_keyrelease(event):
-        if recorder.is_recording:  # To ensure this function doesn't run after stopping recording and before starting a new one
+        if recorder.is_recording:
             recorder.stop_recording()
             recorder.save_audio()
             lbl.config(text="waiting for response")
@@ -200,7 +202,10 @@ def main():
             assistant_talk, environment_description = prompt_divide(assistant_response)
 
             # generate picture
-            image = model.generate(style, environment_description, loras, width//2, height//2)
+            image = model.generate(style,
+                                   environment_description,
+                                   loras,
+                                   width//2, height//2)
 
             # Reload and resize the background image
             #bg_image = load_and_resize_image("../temp/output.png", 1920, 1080)
