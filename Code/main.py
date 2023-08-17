@@ -4,7 +4,7 @@
 
 from Voice2Text import WhisperModel
 from LLMcore import ChatBot
-from Text2Voice import df, speak_out
+from Text2Voice import DF, speak_out
 from tkinter import ttk
 import tkinter as tk
 import threading
@@ -32,10 +32,10 @@ def prompt_divide(assistant_response):
 
 
 class ConversationBot():
-    def __init__(self, openai_api_key, voice):
+    def __init__(self, openai_api_key, voice, character_path, translator_path):
         language = voice[0:2]
         self.srm = WhisperModel(language)
-        self.chat = ChatBot(openai_api_key, language, "../prompt/utilities/translator.txt", "../prompt/characters/alice.txt")
+        self.chat = ChatBot(openai_api_key, language, translator_path, character_path)
     def conversation(self):
         text = self.srm.generate_text()
         response = self.chat.response(text)
@@ -51,7 +51,6 @@ def initial():
 
     file_path = "../prompt/characters"
     characters = os.listdir(file_path)
-    print(characters)
 
 
     def on_language_change(event):
