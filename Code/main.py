@@ -15,8 +15,6 @@ import os
 
 
 
-
-
 def prompt_divide(assistant_response):
     asstance_talk, environment_description \
         = assistant_response.replace("\n", " ").split("Part 1:")[1].split("Part 2:")
@@ -29,8 +27,12 @@ class ConversationBot():
         self.srm = WhisperModel(language)
         self.chat = ChatBot(openai_api_key, language, translator_path, character_path)
     def conversation(self):
-        text = self.srm.generate_text()
-        response = self.chat.response(text)
+        try:
+            text = self.srm.generate_text()
+            response = self.chat.response(text)
+        except:
+            response = self.chat.response()
+        return text, response
         return text, response
 
 def initial():
@@ -241,7 +243,7 @@ def main():
 
 
     # Initially load and resize the background image
-    bg_image = load_and_resize_image("../temp/output.png", width, height)
+    bg_image = load_and_resize_image("../output.png", width, height)
     bg_label = tk.Label(root, image=bg_image)
     bg_label.place(x=0, y=0, relwidth=1, relheight=1)
 
